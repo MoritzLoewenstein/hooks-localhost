@@ -1,0 +1,17 @@
+<svg
+	xmlns="http://www.w3.org/2000/svg"
+	width="24"
+	height="24"
+	fill="none"
+	stroke="currentColor"
+	stroke-linecap="round"
+	stroke-linejoin="round"
+	stroke-width="2"
+>
+	<!-- Center circle -->
+	<circle cx="12" cy="12" r="3" />
+	<!-- Gear “teeth” -->
+	<path
+		d="M12 2v2M12 20v2M20 12h2M2 12H4M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M19.07 4.93l-1.41 1.41M6.34 17.66l-1.41 1.41"
+	/>
+</svg>

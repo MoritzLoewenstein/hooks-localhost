@@ -1,0 +1,60 @@
+generator client {
+  provider               = "prisma-client"
+  output                 = "../generated/prisma/"
+  moduleFormat           = "esm"
+  runtime                = "nodejs"
+  generatedFileExtension = "ts"
+  importFileExtension    = "ts"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id
+  email     String   @unique
+  password  String
+  isAdmin   Boolean  @default(false) @map("is_admin")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  invites          UserInvite[]
+  recoveryCodes    UserRecoveryCode[]
+  sessions         Session[]
+
+  @@map("users")
+}
+
+model UserInvite {
+  userId    String   @map("user_id")
+  token     String   @unique
+  email     String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, email])
+  @@map("user_invites")
+}
+
+model UserRecoveryCode {
+  userId String @map("user_id")
+  code   String @unique
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, code])
+  @@map("user_recovery_codes")
+}
+
+model Session {
+  id        String   @id
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}

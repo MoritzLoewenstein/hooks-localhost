@@ -1,0 +1,12 @@
+.gitignore
+README.md
+.prettierrc
+.prettierignore
+eslint.config.js
+.env.local
+Dockerfile
+node_modules
+build
+e2e
+.svelte-kit
+.github

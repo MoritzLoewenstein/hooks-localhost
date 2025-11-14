@@ -1,0 +1,166 @@
+:root {
+	--turqoise: #4d9ebb;
+	--orange: #e77e11;
+	--green: #96b241;
+	--yellow: #fece3e;
+	--blue: #1b2560;
+	--offwhite: #f6f5f0;
+	--side-padding: max(2rem, calc((100% - 1200px) / 2));
+	--color-transition:
+		color 0.2s ease-out, background-color 0.2s ease-out, border-color 0.2s ease-out,
+		opacity 0.2s ease-out;
+}
+
+html,
+body {
+	background-color: var(--offwhite);
+	margin: 0;
+}
+
+body {
+	padding: 2rem 0;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	font-family: 'Courier New', Courier, monospace;
+	font-weight: 700;
+	color: var(--blue);
+}
+
+p,
+label,
+a,
+input,
+th,
+td {
+	font-family: Verdana, Geneva, Tahoma, sans-serif;
+	color: var(--blue);
+}
+
+p {
+	margin: 0;
+}
+
+input {
+	padding: 0.5em;
+	border: 1px solid var(--blue);
+	border-radius: 0;
+}
+
+input[type='text']:read-only,
+input[type='email']:read-only,
+input[type='password']:read-only {
+	pointer-events: none;
+	user-select: none;
+	background-color: var(--offwhite);
+}
+
+input[type='text']:read-only:focus,
+input[type='email']:read-only:focus,
+input[type='password']:read-only:focus {
+	outline: none;
+}
+
+dialog {
+	border: 2px solid var(--blue);
+	width: min(100%, 400px);
+}
+
+dialog::backdrop {
+	backdrop-filter: blur(2px);
+}
+
+main {
+	position: relative;
+	padding-bottom: 10rem;
+}
+
+button, a.btn {
+	font-family: 'Courier New', Courier, monospace;
+	font-weight: 700;
+	color: var(--offwhite);
+	background-color: var(--blue);
+	border: 1px solid var(--blue);
+	border-radius: 0;
+	padding: 0.5rem 1rem;
+	cursor: pointer;
+	transition: var(--color-transition);
+}
+
+button.btn-secondary, a.bntn-secondary {
+	background-color: transparent;
+	color: var(--blue);
+}
+
+button.btn-secondary:hover, a.btn-secondary:hover {
+	background-color: var(--blue);
+	color: var(--offwhite);
+}
+
+button.btn-danger, a.btn-danger {
+	background-color: var(--orange);
+	border-color: var(--orange);
+}
+
+button.btn-small, a.btn-small {
+	height: 24px;
+	width: 24px;
+	padding: 2px;
+}
+
+button.btn-small svg, a.btn-small svg {
+	width: 100%;
+	height: auto;
+	display: block;
+}
+
+button.btn-icon, a.btn-icon {
+	line-height: 0;
+}
+
+button:hover, a.btn:hover {
+	background-color: transparent;
+	color: var(--blue);
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+table {
+	width: 100%;
+	margin: 0 auto;
+	border-collapse: collapse;
+	table-layout: fixed;
+}
+
+table th,
+table tr td {
+	text-align: left;
+	border: none;
+}
+
+thead tr {
+	border-bottom: 3px solid var(--blue);
+}
+
+tbody tr {
+	border-bottom: 2px solid var(--blue);
+}
+
+tbody tr:nth-of-type(odd) {
+	border-color: var(--turqoise);
+}
+
+tbody tr:last-of-type {
+	border-bottom: none;
+}

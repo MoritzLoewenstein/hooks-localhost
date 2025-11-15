@@ -1,4 +1,6 @@
-import { error, fail, type ServerLoad } from '@sveltejs/kit';
+import { getWebhookEndpoints } from '$lib/server/webhook';
+import type { PageServerLoad } from './$types';
+import { error, fail } from '@sveltejs/kit';
 import {
 	createSession,
 	getSessionUserInfo,
@@ -23,7 +25,7 @@ import { getDbBackup } from '$lib/server/db';
 import type { Actions } from './$types';
 import HttpStatusCode from '$lib/shared/HttpStatusCode';
 
-export const load: ServerLoad = async ({ cookies, url }) => {
+export const load: PageServerLoad = async ({ cookies, url }) => {
 	const firstUser = await isFirstUser();
 	if (firstUser) {
 		return error(HttpStatusCode.UNAUTHORIZED, {
@@ -44,22 +46,23 @@ export const load: ServerLoad = async ({ cookies, url }) => {
 	}
 	await updateSession(session_id);
 	const recovery_codes = user.first_login ? await createRecoveryCodes(user.id) : [];
-	const [recovery_code_count, user_invites] = await Promise.all([
+	const [recovery_code_count, user_invites, endpoints] = await Promise.all([
 		getRecoveryCodeCount(user.id),
 		getUserInvites(user.id),
+		getWebhookEndpoints(user.id)
 	]);
 
 	return {
-		session_id,
 		user,
 		user_invites,
 		first_login: user.first_login,
 		recovery_codes,
-		recovery_code_count
+		recovery_code_count,
+		endpoints
 	};
 };
 
-export async function getUnauthorizedData(searchParams: URLSearchParams) {
+async function getUnauthorizedData(searchParams: URLSearchParams) {
 	if (searchParams.has('recovery_code')) {
 		return {
 			code: 'recovery_code',
@@ -112,7 +115,6 @@ export const actions: Actions = {
 			maxAge: SESSION_MAX_AGE
 		});
 		return {
-			session_id,
 			user,
 			recovery_code_count: await getRecoveryCodeCount(user.id),
 			user_invites: await getUserInvites(user.id)
@@ -144,7 +146,6 @@ export const actions: Actions = {
 			maxAge: SESSION_MAX_AGE
 		});
 		return {
-			session_id,
 			user,
 			recovery_code_count: await getRecoveryCodeCount(user.id),
 			user_invites: await getUserInvites(user.id),
@@ -186,7 +187,6 @@ export const actions: Actions = {
 			maxAge: SESSION_MAX_AGE
 		});
 		return {
-			session_id,
 			user,
 			recovery_code_count: await getRecoveryCodeCount(user.id),
 			first_login: true,
@@ -227,7 +227,6 @@ export const actions: Actions = {
 			maxAge: SESSION_MAX_AGE
 		});
 		return {
-			session_id,
 			user,
 			recovery_code_count: await getRecoveryCodeCount(user_id),
 			user_invites: await getUserInvites(user_id)

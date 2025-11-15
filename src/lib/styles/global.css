@@ -80,7 +80,8 @@ main {
 	padding-bottom: 10rem;
 }
 
-button, a.btn {
+button,
+a.btn {
 	font-family: 'Courier New', Courier, monospace;
 	font-weight: 700;
 	color: var(--offwhite);
@@ -92,38 +93,45 @@ button, a.btn {
 	transition: var(--color-transition);
 }
 
-button.btn-secondary, a.bntn-secondary {
+button.btn-secondary,
+a.bntn-secondary {
 	background-color: transparent;
 	color: var(--blue);
 }
 
-button.btn-secondary:hover, a.btn-secondary:hover {
+button.btn-secondary:hover,
+a.btn-secondary:hover {
 	background-color: var(--blue);
 	color: var(--offwhite);
 }
 
-button.btn-danger, a.btn-danger {
+button.btn-danger,
+a.btn-danger {
 	background-color: var(--orange);
 	border-color: var(--orange);
 }
 
-button.btn-small, a.btn-small {
+button.btn-small,
+a.btn-small {
 	height: 24px;
 	width: 24px;
 	padding: 2px;
 }
 
-button.btn-small svg, a.btn-small svg {
+button.btn-small svg,
+a.btn-small svg {
 	width: 100%;
 	height: auto;
 	display: block;
 }
 
-button.btn-icon, a.btn-icon {
+button.btn-icon,
+a.btn-icon {
 	line-height: 0;
 }
 
-button:hover, a.btn:hover {
+button:hover,
+a.btn:hover {
 	background-color: transparent;
 	color: var(--blue);
 }

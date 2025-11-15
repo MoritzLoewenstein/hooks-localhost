@@ -22,6 +22,7 @@ model User {
   invites          UserInvite[]
   recoveryCodes    UserRecoveryCode[]
   sessions         Session[]
+  webhookEndpoints WebhookEndpoint[]
 
   @@map("users")
 }
@@ -57,4 +58,16 @@ model Session {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("sessions")
+}
+
+model WebhookEndpoint {
+  id        String   @id
+  userId    String   @map("user_id")
+  target    String
+  method    String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("webhook_endpoints")
 }

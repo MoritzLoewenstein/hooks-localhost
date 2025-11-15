@@ -8,7 +8,12 @@ declare global {
 			email?: string;
 			invite_token?: string;
 		}
-		// interface Locals {}
+		interface Locals {
+			session?: {
+				userId: string;
+				id: string;
+			};
+		}
 		// interface PageData {}
 		// interface PageState {}
 		// interface Platform {}

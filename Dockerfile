@@ -1,5 +1,5 @@
 # step 1: build sveltekit app
-FROM node:24-alpine AS builder
+FROM node:24-bookworm-slim AS builder
 WORKDIR /app
 COPY . .
 RUN npm install --include=dev
@@ -14,7 +14,7 @@ RUN npm run build
 RUN npm prune --omit=dev
 
 # step 2: copy sveltekit build output to a new image
-FROM node:24-alpine
+FROM node:24-bookworm-slim
 WORKDIR /app
 COPY --from=builder /app/build build/
 COPY --from=builder /app/static static/

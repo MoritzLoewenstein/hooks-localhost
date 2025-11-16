@@ -27,7 +27,9 @@ export function connectWebSocket() {
 	}
 
 	const protocol = dev ? 'ws:' : 'wss:';
-	const hostname = dev ? window.location.hostname : `ws.${window.location.hostname}`;
+	const isSubdomain = window.location.hostname.split(".").length > 2;
+	const websocketPrefix = isSubdomain ? "ws-" : "ws.";
+	const hostname = dev ? window.location.hostname : `${websocketPrefix}${window.location.hostname}`;
 	const socketPort = dev ? ':3001' : '';
 	const url = `${protocol}//${hostname}${socketPort}`;
 

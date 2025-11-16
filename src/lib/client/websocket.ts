@@ -37,8 +37,7 @@ export function connectWebSocket() {
 		reconnection: true,
 		reconnectionDelay: 3000,
 		reconnectionAttempts: Infinity,
-		withCredentials: true,
-
+		withCredentials: true
 	});
 
 	socket.on('connect', () => {

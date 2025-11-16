@@ -31,7 +31,6 @@ Edit `.env` and set:
 
 ```env
 ORIGIN=https://your-domain.com
-PORT=3000
 DATABASE_URL=file:./data/database.db
 ```
 
@@ -42,6 +41,7 @@ docker compose up -d
 ```
 
 The application will be available at `http://localhost:3000` (or your configured PORT).
+The Websocket Server will listen at PORT + 1 (or 3001).
 
 ## Usage
 

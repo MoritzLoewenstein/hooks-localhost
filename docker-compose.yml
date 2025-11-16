@@ -1,13 +1,11 @@
 services:
-  sveltekit:
+  hooks-localhost:
     build:
       context: .
       dockerfile: 'Dockerfile'
       args:
         ORIGIN: ${ORIGIN}
     image: ghcr.io/moritzloewenstein/hooks-localhost:latest
-    ports:
-      - '${PORT}:3000'
     volumes:
       - hooks_localhost_data:/app/data
 

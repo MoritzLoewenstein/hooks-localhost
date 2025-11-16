@@ -64,10 +64,10 @@ import { Server } from 'socket.io';
 
 const httpServer = createServer();
 const io = new Server(httpServer, {
-	cors: { 
-		origin: env.ORIGIN, 
+	cors: {
+		origin: env.ORIGIN,
 		methods: ['GET', 'POST'],
-		credentials: true 
+		credentials: true
 	},
 	path: '/socket.io/'
 });

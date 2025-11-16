@@ -3,7 +3,6 @@
 	import RefreshIcon from './icons/RefreshIcon.svelte';
 	import SaveIcon from './icons/SaveIcon.svelte';
 	import { enhance } from '$app/forms';
-	import { PUBLIC_APP_NAMESPACE } from '$env/static/public';
 	import { page } from '$app/state';
 	import HttpStatusCode from './shared/HttpStatusCode';
 
@@ -55,7 +54,7 @@
 					const url = URL.createObjectURL(blob);
 					const a = document.createElement('a');
 					a.href = url;
-					a.download = `${PUBLIC_APP_NAMESPACE}-recovery-codes.txt`;
+					a.download = `hooks-localhost-recovery-codes.txt`;
 					a.click();
 					URL.revokeObjectURL(url);
 				}}

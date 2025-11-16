@@ -60,7 +60,7 @@ export async function initializeWebsocketServer() {
 		});
 	});
 
-	const port = process.env.SOCKETIO_PORT || 3001;
+	const port = env.PORT ? env.PORT + 1 : 3001;
 	await httpServer.listen(port);
 	console.log(`Socket.IO server listening on port ${port}`);
 }

@@ -27,9 +27,9 @@ export function connectWebSocket() {
 	}
 
 	const protocol = dev ? 'ws:' : 'wss:';
-	const hostname = window.location.hostname;
-	const socketPort = '3001';
-	const url = `${protocol}//${hostname}:${socketPort}`;
+	const hostname = dev ? window.location.hostname : `ws.${window.location.hostname}`;
+	const socketPort = dev ? ':3001' : '';
+	const url = `${protocol}//${hostname}${socketPort}`;
 
 	socket = io(url, {
 		path: '/socket.io/',

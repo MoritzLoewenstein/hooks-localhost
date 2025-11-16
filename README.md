@@ -41,7 +41,8 @@ docker compose up -d
 ```
 
 The application will be available at `http://localhost:3000` (or your configured PORT).
-The Websocket Server will listen at PORT + 1 (or 3001).
+The websocket server will listen at PORT + 1 (e.g. 3001).
+It is assumed that the websocket server will be available at the domain `ws.${ORIGIN}` in production.
 
 ## Usage
 

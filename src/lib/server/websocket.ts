@@ -1,11 +1,8 @@
-import type { Server as SocketIOServer, Socket } from 'socket.io';
-import { Server } from 'socket.io';
-import { createServer } from 'node:http';
+import type { Socket } from 'socket.io';
 import { getSessionUserInfo } from './session';
-import { env } from '$env/dynamic/private';
 
 const connections = new Map<string, Socket>();
-let io: SocketIOServer | null = null;
+let initialized = false;
 
 function parseCookie(cookieHeader: string | undefined, name: string): string | null {
 	if (!cookieHeader) return null;
@@ -20,18 +17,13 @@ function parseCookie(cookieHeader: string | undefined, name: string): string | n
 }
 
 export async function initializeWebsocketServer() {
-	if (io) return;
+	if (initialized) return;
 
-	const httpServer = createServer();
-
-	io = new Server(httpServer, {
-		cors: {
-			origin: env.ORIGIN,
-			methods: ['GET', 'POST'],
-			credentials: true
-		},
-		path: '/socket.io/'
-	});
+	const io = globalThis.socketIo;
+	if (!io) {
+		console.warn('Socket.IO server not available in globalThis.socketIo');
+		return;
+	}
 
 	io.on('connection', async (socket) => {
 		const cookieHeader = socket.handshake.headers.cookie;
@@ -60,9 +52,8 @@ export async function initializeWebsocketServer() {
 		});
 	});
 
-	const port = env.PORT ? env.PORT + 1 : 3001;
-	await httpServer.listen(port);
-	console.log(`Socket.IO server listening on port ${port}`);
+	initialized = true;
+	console.log('Socket.IO connection handlers initialized');
 }
 
 function addConnection(userId: string, socket: Socket) {

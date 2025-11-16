@@ -1,6 +1,5 @@
 import { writable } from 'svelte/store';
 import { io, type Socket } from 'socket.io-client';
-import { dev } from '$app/environment';
 
 export interface WebhookMessage {
 	endpointId: string;
@@ -26,14 +25,7 @@ export function connectWebSocket() {
 		return;
 	}
 
-	const protocol = dev ? 'ws:' : 'wss:';
-	const isSubdomain = window.location.hostname.split(".").length > 2;
-	const websocketPrefix = isSubdomain ? "ws-" : "ws.";
-	const hostname = dev ? window.location.hostname : `${websocketPrefix}${window.location.hostname}`;
-	const socketPort = dev ? ':3001' : '';
-	const url = `${protocol}//${hostname}${socketPort}`;
-
-	socket = io(url, {
+	socket = io({
 		path: '/socket.io/',
 		transports: ['websocket', 'polling'],
 		reconnection: true,

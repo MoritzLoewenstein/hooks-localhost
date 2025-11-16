@@ -17,7 +17,7 @@
 		"test": "vitest --run",
 		"test:ui": "vitest --ui",
 		"test:watch": "vitest",
-		"start:prod": "prisma migrate deploy && node build"
+		"start:prod": "prisma migrate deploy && node server.js"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^1.4.1",

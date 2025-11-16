@@ -54,37 +54,49 @@
 
 ### Socket.IO Implementation
 
-Socket.IO is initialized in `src/lib/server/websocket.ts` using node:http `createServer()` and called from `src/hooks.server.ts`.
+Socket.IO is initialized in `server.js` on the same HTTP server as SvelteKit. Connection handlers are registered in `src/lib/server/websocket.ts` via `src/hooks.server.ts`.
 
-**Server Setup** (`src/lib/server/websocket.ts`):
+**Server Setup** (`server.js`):
 
 ```javascript
 import { createServer } from 'node:http';
 import { Server } from 'socket.io';
+import { handler } from './build/handler.js';
 
-const httpServer = createServer();
+const httpServer = createServer(handler);
+
 const io = new Server(httpServer, {
 	cors: {
-		origin: env.ORIGIN,
+		origin: process.env.ORIGIN,
 		methods: ['GET', 'POST'],
 		credentials: true
 	},
 	path: '/socket.io/'
 });
 
-io.on('connection', async (socket) => {
-	const sessionId = parseCookie(socket.handshake.headers.cookie, 'session_id');
-	const userInfo = await getSessionUserInfo(sessionId);
-	addConnection(userInfo.id, socket);
-});
+globalThis.socketIo = io;
 
-httpServer.listen(3001); // Socket.IO runs on separate port
+httpServer.listen(process.env.PORT || 3000);
+```
+
+**Connection Handlers** (`src/lib/server/websocket.ts`):
+
+```javascript
+export async function initializeWebsocketServer() {
+	const io = globalThis.socketIo;
+
+	io.on('connection', async (socket) => {
+		const sessionId = parseCookie(socket.handshake.headers.cookie, 'session_id');
+		const userInfo = await getSessionUserInfo(sessionId);
+		addConnection(userInfo.id, socket);
+	});
+}
 ```
 
 **Client Connection**:
 
 ```javascript
-const socket = io(url, {
+const socket = io({
 	path: '/socket.io/',
 	transports: ['websocket', 'polling'],
 	reconnection: true,
@@ -96,9 +108,10 @@ const socket = io(url, {
 
 **Key Features**:
 
-- Socket.IO server runs on separate HTTP server (default port 3001)
-- SvelteKit app runs on main port (default 3000)
-- Connections authenticated using session cookies (not auth handshake)
+- Socket.IO server runs on the same HTTP server as SvelteKit
+- Server instance exposed via `globalThis.socketIo`
+- Connection business logic in SvelteKit application code
+- Connections authenticated using session cookies
 - Each user can have one active Socket.IO connection
 - Automatic reconnection with 3-second delay and infinite attempts
 - Supports both WebSocket and polling transports

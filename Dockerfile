@@ -18,7 +18,7 @@ RUN npm prune --omit=dev
 FROM node:24-bookworm
 WORKDIR /app
 RUN mkdir data/
-VOLUME /app/data/
+VOLUME data/
 COPY --from=builder /app/build build/
 COPY --from=builder /app/static static/
 COPY --from=builder /app/generated/prisma generated/prisma/
@@ -34,7 +34,6 @@ ENV ORIGIN=${ORIGIN}
 ENV BODY_SIZE_LIMIT=1000000
 ENV DATABASE_URL=file:/app/data/db.sqlite
 
-VOLUME /app/data
 EXPOSE 3000
 
 CMD [ "npm", "run", "start:prod" ]

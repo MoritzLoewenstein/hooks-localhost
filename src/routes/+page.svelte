@@ -64,13 +64,24 @@
 		navigator.clipboard.writeText(url);
 	}
 
+	async function handleReplay(message: (typeof $webhookMessages)[0]) {
+		const status = await forwardWebhook(message);
+		webhookMessages.update((messages) =>
+			messages.map((m) => (m === message ? { ...m, status } : m))
+		);
+	}
+
 	$effect(() => {
 		const messages = $webhookMessages;
 		if (messages.length > 0) {
 			const latest = messages[0];
-			forwardWebhook(latest).catch((error) => {
-				console.error('Failed to forward webhook:', error);
-			});
+			if (latest.status === undefined) {
+				forwardWebhook(latest).then((status) => {
+					webhookMessages.update((messages) =>
+						messages.map((m) => (m === latest ? { ...m, status } : m))
+					);
+				});
+			}
 		}
 	});
 </script>
@@ -110,6 +121,9 @@
 
 	<section class="messages">
 		<h2>Recent Webhooks ({$webhookMessages.length})</h2>
+		<p class="devtools-hint">
+			💡 You can also use browser devtools (Network tab) to resend/edit each request locally
+		</p>
 		<ul>
 			{#each $webhookMessages as message (message)}
 				<li>
@@ -117,6 +131,14 @@
 						<span class="method">{message.method}</span>
 						<code class="shortid">{message.endpointId}</code>
 						<span class="target">→ {message.target}</span>
+						{#if message.status !== undefined}
+							<span class="status" class:error={message.status === null || message.status >= 400}>
+								{message.status !== null ? message.status : 'Failed'}
+							</span>
+						{/if}
+						<button class="btn-secondary replay-btn" onclick={() => handleReplay(message)}>
+							↻ Replay
+						</button>
 					</div>
 					{#if message.body}
 						<pre class="message-body">{message.body}</pre>
@@ -210,5 +232,28 @@
 	button:disabled {
 		opacity: 0.5;
 		cursor: not-allowed;
+	}
+
+	.devtools-hint {
+		font-size: 0.9rem;
+		margin-bottom: 1rem;
+	}
+
+	.replay-btn {
+		margin-left: auto;
+		font-size: 1.1rem;
+	}
+
+	.status {
+		padding: 0.25rem 0.5rem;
+		border-radius: 4px;
+		font-weight: bold;
+		background: var(--turqoise);
+		color: white;
+		font-size: 0.9rem;
+	}
+
+	.status.error {
+		background: #e74c3c;
 	}
 </style>

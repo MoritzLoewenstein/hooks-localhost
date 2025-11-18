@@ -7,6 +7,7 @@ export interface WebhookMessage {
 	method: string;
 	headers: Record<string, string>;
 	body: string | null;
+	status?: number | null;
 }
 
 interface WebSocketMessage {

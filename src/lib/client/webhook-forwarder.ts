@@ -1,6 +1,6 @@
 import type { WebhookMessage } from './websocket';
 
-export async function forwardWebhook(webhook: WebhookMessage): Promise<void> {
+export async function forwardWebhook(webhook: WebhookMessage): Promise<number | null> {
 	try {
 		const { target, method, headers, body } = webhook;
 
@@ -13,9 +13,10 @@ export async function forwardWebhook(webhook: WebhookMessage): Promise<void> {
 			fetchOptions.body = body;
 		}
 
-		await fetch(target, fetchOptions);
+		const response = await fetch(target, fetchOptions);
+		return response.status;
 	} catch (error) {
 		console.error('Failed to forward webhook:', error);
-		throw error;
+		return null;
 	}
 }

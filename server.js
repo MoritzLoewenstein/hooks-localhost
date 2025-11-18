@@ -3,7 +3,7 @@ import { Server } from 'socket.io';
 
 let handler = null;
 const httpServer = createServer((request, response) => {
-	if(handler === null) {
+	if (handler === null) {
 		response.statusCode = 503;
 		response.end();
 		return;

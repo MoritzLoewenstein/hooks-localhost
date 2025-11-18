@@ -10,6 +10,7 @@
 	} from '$lib/client/websocket';
 	import { forwardWebhook } from '$lib/client/webhook-forwarder';
 	import { createEndpoint, removeEndpoint } from './webhooks.remote';
+	import { browser } from '$app/environment';
 
 	interface Props {
 		data: {
@@ -122,27 +123,25 @@
 	<section class="messages">
 		<h2>Recent Webhooks ({$webhookMessages.length})</h2>
 		<p class="devtools-hint">
-			💡 You can also use browser devtools (Network tab) to resend/edit each request locally
+			You can also use browser devtools (Network tab) to resend/edit each request locally.<br />If
+			you see failed requests, make sure your dev server allows requests from {browser
+				? window.location.hostname
+				: 'this domain'} (CORS).
 		</p>
 		<ul>
 			{#each $webhookMessages as message (message)}
 				<li>
-					<div class="message-header">
-						<span class="method">{message.method}</span>
-						<code class="shortid">{message.endpointId}</code>
-						<span class="target">→ {message.target}</span>
-						{#if message.status !== undefined}
-							<span class="status" class:error={message.status === null || message.status >= 400}>
-								{message.status !== null ? message.status : 'Failed'}
-							</span>
-						{/if}
-						<button class="btn-secondary replay-btn" onclick={() => handleReplay(message)}>
-							↻ Replay
-						</button>
-					</div>
-					{#if message.body}
-						<pre class="message-body">{message.body}</pre>
+					<span class="method">{message.method}</span>
+					<code class="shortid">{message.endpointId}</code>
+					<span class="target">→ {message.target}</span>
+					{#if message.status !== undefined}
+						<span class="status" class:error={message.status === null || message.status >= 400}>
+							{message.status !== null ? message.status : 'Failed'}
+						</span>
 					{/if}
+					<button class="btn-secondary replay-btn" onclick={() => handleReplay(message)}>
+						↻ Replay
+					</button>
 				</li>
 			{/each}
 		</ul>
@@ -210,22 +209,7 @@
 		}
 	}
 
-	.message-header {
-		display: flex;
-		gap: 1rem;
-		align-items: center;
-		margin-bottom: 0.5rem;
-	}
-
-	.message-body {
-		background: var(--offwhite);
-		padding: 0.5rem;
-		border-radius: 4px;
-		overflow-x: auto;
-	}
-
 	button {
-		padding: 0.5rem 1rem;
 		cursor: pointer;
 	}
 
@@ -241,19 +225,17 @@
 
 	.replay-btn {
 		margin-left: auto;
-		font-size: 1.1rem;
 	}
 
 	.status {
 		padding: 0.25rem 0.5rem;
-		border-radius: 4px;
 		font-weight: bold;
-		background: var(--turqoise);
+		background: var(--green);
 		color: white;
 		font-size: 0.9rem;
 	}
 
 	.status.error {
-		background: #e74c3c;
+		background: var(--orange);
 	}
 </style>

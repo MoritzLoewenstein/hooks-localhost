@@ -1,8 +1,15 @@
 import { createServer } from 'node:http';
 import { Server } from 'socket.io';
-import { handler } from './build/handler.js';
 
-const httpServer = createServer(handler);
+let handler = null;
+const httpServer = createServer((request, response) => {
+	if(handler === null) {
+		response.statusCode = 503;
+		response.end();
+		return;
+	}
+	handler(request, response);
+});
 
 const io = new Server(httpServer, {
 	cors: {
@@ -14,6 +21,9 @@ const io = new Server(httpServer, {
 });
 
 globalThis.socketIo = io;
+
+const { handler: svelteHandler } = await import('./build/handler.js');
+handler = svelteHandler;
 
 const port = process.env.PORT || 3000;
 httpServer.listen(port, () => {

@@ -2,7 +2,7 @@ import type { HandleServerError } from '@sveltejs/kit';
 import { initializeWebsocketServer } from '$lib/server/websocket';
 import { dev } from '$app/environment';
 
-if(!dev) {
+if (!dev) {
 	await initializeWebsocketServer();
 }
 

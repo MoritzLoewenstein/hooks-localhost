@@ -2,6 +2,34 @@
 
 A webhook relay service that forwards webhook requests from public endpoints to your local development environment.
 
+## How it works
+
+This service exploits one insight: JavaScript running in the browser can fetch localhost, as long as the receiving server allows it (CORS). A blog post about dev-server security vulnerabilities made me aware of this ([sapphi-red: local-server best practices](https://green.sapphi.red/blog/local-server-security-best-practices)). If you use this tool, make sure to only allow the necessary origins in your CORS headers, e.g. only add the domain of this service in development and dont use `Access-Control-Allow-Origin: *`.
+
+The application maintains a WebSocket connection to the server while you have it open. When a webhook arrives at the `/hooks/endpoint-id` route, the server instantly broadcasts it to your browser via WebSocket, where client-side JavaScript executes a fetch request to your local development server, getting the exact request data to your localhost target.
+
+This approach has further advantages:
+
+- Server never stores any request data, the request gets instantly forwarded via websocket
+- You can inspect and replay requests via your browsers devtools (network tab)
+- You dont need an application running on your machine, just open the website and start testing
+
+```mermaid
+sequenceDiagram
+    participant External as External Service
+    participant Server as hooks-localhost Server
+    participant Browser as Your Browser
+    participant Localhost as Your Localhost Server
+
+    External->>Server: HTTP Webhook Request<br/>(POST /hook/endpoint-id)
+    Server->>Server: Validate endpoint & user
+    Server-->>External: 204 No Content<br/>(immediate response)
+
+    Server->>Browser: WebSocket Message<br/>(method, headers, body)
+    Browser->>Localhost: Forward exact request<br/>(method, headers, body)
+    Localhost-->>Browser: Response (not sent back)
+```
+
 ## Features
 
 - **Webhook Relay**: Receive webhooks at public endpoints and forward them to localhost

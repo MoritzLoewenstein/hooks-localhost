@@ -2,7 +2,6 @@ import type { Socket } from 'socket.io';
 import { getSessionUserInfo } from './session';
 
 const connections = new Map<string, Socket>();
-let initialized = false;
 
 function parseCookie(cookieHeader: string | undefined, name: string): string | null {
 	if (!cookieHeader) return null;
@@ -17,8 +16,6 @@ function parseCookie(cookieHeader: string | undefined, name: string): string | n
 }
 
 export async function initializeWebsocketServer() {
-	if (initialized) return;
-
 	const io = globalThis.socketIo;
 	if (!io) {
 		console.warn('Socket.IO server not available in globalThis.socketIo');
@@ -30,30 +27,23 @@ export async function initializeWebsocketServer() {
 		const sessionId = parseCookie(cookieHeader, 'session_id');
 
 		if (!sessionId) {
-			console.error('Connection rejected: No session_id cookie');
 			socket.disconnect();
 			return;
 		}
 
 		const userInfo = await getSessionUserInfo(sessionId);
 		if (!userInfo) {
-			console.error('Connection rejected: Invalid or expired session');
 			socket.disconnect();
 			return;
 		}
 
 		const userId = userInfo.id;
-		console.log(`User ${userId} connected via Socket.IO`);
 		addConnection(userId, socket);
 
 		socket.on('disconnect', () => {
-			console.log(`User ${userId} disconnected`);
 			removeConnection(userId);
 		});
 	});
-
-	initialized = true;
-	console.log('Socket.IO connection handlers initialized');
 }
 
 function addConnection(userId: string, socket: Socket) {

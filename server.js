@@ -11,7 +11,7 @@ const httpServer = createServer((request, response) => {
 	handler(request, response);
 });
 
-const io = new Server(httpServer, {
+globalThis.socketIo = new Server(httpServer, {
 	cors: {
 		origin: process.env.ORIGIN,
 		methods: ['GET', 'POST'],
@@ -19,8 +19,6 @@ const io = new Server(httpServer, {
 	},
 	path: '/socket.io/'
 });
-
-globalThis.socketIo = io;
 
 const { handler: svelteHandler } = await import('./build/handler.js');
 handler = svelteHandler;

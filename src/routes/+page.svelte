@@ -10,7 +10,7 @@
 	} from '$lib/client/websocket';
 	import { forwardWebhook } from '$lib/client/webhook-forwarder';
 	import { createEndpoint, removeEndpoint } from './webhooks.remote';
-	import { browser } from '$app/environment';
+	import { browser, dev } from '$app/environment';
 
 	interface Props {
 		data: {
@@ -72,6 +72,29 @@
 		);
 	}
 
+	function handleClearMessages() {
+		webhookMessages.set([]);
+	}
+
+	function handleGenerateRandomWebhook() {
+		if (endpoints.length === 0) return;
+
+		const statuses = [200, 201, 204, 400, 404, 500];
+		const randomEndpoint = endpoints[Math.floor(Math.random() * endpoints.length)];
+		const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
+
+		const randomMessage = {
+			method: randomEndpoint.method,
+			endpointId: randomEndpoint.id,
+			target: randomEndpoint.target,
+			headers: { 'content-type': 'application/json' },
+			body: JSON.stringify({ test: 'data' }),
+			status: randomStatus
+		};
+
+		webhookMessages.update((messages) => [randomMessage, ...messages]);
+	}
+
 	$effect(() => {
 		const messages = $webhookMessages;
 		if (messages.length > 0) {
@@ -121,7 +144,19 @@
 	</section>
 
 	<section class="messages">
-		<h2>Recent Webhooks ({$webhookMessages.length})</h2>
+		<div class="messages-header">
+			<h2>Recent Webhooks ({$webhookMessages.length})</h2>
+			<div class="button-group">
+				{#if dev}
+					<button class="btn-secondary" onclick={handleGenerateRandomWebhook}>
+						Generate Random (dev)
+					</button>
+				{/if}
+				<button class="btn-secondary" onclick={handleClearMessages} disabled={$webhookMessages.length === 0}>
+					Clear
+				</button>
+			</div>
+		</div>
 		<p class="devtools-hint">
 			You can also use browser devtools (Network tab) to resend/edit each request locally.<br />If
 			you see failed requests, make sure your dev server allows requests from {browser
@@ -216,6 +251,18 @@
 	button:disabled {
 		opacity: 0.5;
 		cursor: not-allowed;
+	}
+
+	.messages-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: 1rem;
+	}
+
+	.button-group {
+		display: flex;
+		gap: 0.5rem;
 	}
 
 	.devtools-hint {

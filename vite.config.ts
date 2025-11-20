@@ -9,8 +9,8 @@ export default defineConfig({
 		{
 			name: 'sveltekit-socketio-server',
 			configureServer(server) {
-				if(server.httpServer === null) {
-					console.error("sveltekit-socketio-server: vite httpServer not available");
+				if (server.httpServer === null) {
+					console.error('sveltekit-socketio-server: vite httpServer not available');
 					return;
 				}
 				globalThis.socketIo = new Server(server.httpServer, {

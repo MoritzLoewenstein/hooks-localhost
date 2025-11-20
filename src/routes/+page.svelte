@@ -152,7 +152,11 @@
 						Generate Random (dev)
 					</button>
 				{/if}
-				<button class="btn-secondary" onclick={handleClearMessages} disabled={$webhookMessages.length === 0}>
+				<button
+					class="btn-secondary"
+					onclick={handleClearMessages}
+					disabled={$webhookMessages.length === 0}
+				>
 					Clear
 				</button>
 			</div>

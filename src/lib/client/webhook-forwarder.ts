@@ -1,4 +1,4 @@
-import type { WebhookMessage } from './websocket';
+import type { WebhookMessage } from '$lib/shared/types';
 
 export async function forwardWebhook(webhook: WebhookMessage): Promise<number | null> {
 	try {

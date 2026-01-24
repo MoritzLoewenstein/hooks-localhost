@@ -1,7 +1,8 @@
 export const VIEW = {
 	LANDING: 'default',
 	INTRO: 'intro',
-	SETTINGS: 'settings'
+	SETTINGS: 'settings',
+	EDIT_WEBHOOK: 'edit_webhook'
 } as const;
 
 type ViewType = (typeof VIEW)[keyof typeof VIEW];

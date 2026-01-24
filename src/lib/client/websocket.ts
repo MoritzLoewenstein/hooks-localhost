@@ -1,21 +1,13 @@
 import { writable } from 'svelte/store';
 import { io, type Socket } from 'socket.io-client';
-
-export interface WebhookMessage {
-	endpointId: string;
-	target: string;
-	method: string;
-	headers: Record<string, string>;
-	body: string | null;
-	status?: number | null;
-}
+import type { WebhookMessage } from '$lib/shared/types';
+import { webhookMessages } from './webhookMessage.svelte';
 
 interface WebSocketMessage {
 	type: 'webhook';
 	data: WebhookMessage;
 }
 
-export const webhookMessages = writable<WebhookMessage[]>([]);
 export const connected = writable(false);
 
 let socket: Socket | null = null;
@@ -46,7 +38,7 @@ export function connectWebSocket() {
 	socket.on('message', (message: WebSocketMessage) => {
 		try {
 			if (message.type === 'webhook') {
-				webhookMessages.update((messages) => [message.data, ...messages]);
+				webhookMessages.state.unshift(message.data);
 			}
 		} catch (error) {
 			console.error('Failed to parse Socket.IO message:', error);
@@ -73,8 +65,4 @@ export function disconnectWebSocket() {
 		socket = null;
 	}
 	connected.set(false);
-}
-
-export function clearMessages() {
-	webhookMessages.set([]);
 }

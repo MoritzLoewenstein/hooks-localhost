@@ -50,6 +50,29 @@ export async function getWebhookEndpointById(id: string) {
 	});
 }
 
+export async function updateWebhookEndpoint(
+	userId: string,
+	id: string,
+	target: string,
+	method: string
+) {
+	if (!validateLocalhostTarget(target)) {
+		throw new Error('Target must be http://localhost URL');
+	}
+
+	if (!ALLOWED_METHODS.includes(method.toUpperCase())) {
+		throw new Error('Invalid HTTP method');
+	}
+
+	return await db.webhookEndpoint.update({
+		where: { id, userId },
+		data: {
+			target,
+			method: method.toUpperCase()
+		}
+	});
+}
+
 export async function deleteWebhookEndpoint(userId: string, id: string) {
 	return await db.webhookEndpoint.delete({
 		where: { id, userId }

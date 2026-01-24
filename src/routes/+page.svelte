@@ -2,25 +2,17 @@
 	import { onMount, onDestroy } from 'svelte';
 	import Modals from '$lib/Modals.svelte';
 	import MethodDropdown from '$lib/components/MethodDropdown.svelte';
-	import {
-		connectWebSocket,
-		disconnectWebSocket,
-		webhookMessages,
-		connected
-	} from '$lib/client/websocket';
+	import { connectWebSocket, disconnectWebSocket, connected } from '$lib/client/websocket';
+	import { webhookMessages } from '$lib/client/webhookMessage.svelte';
 	import { forwardWebhook } from '$lib/client/webhook-forwarder';
 	import { createEndpoint, removeEndpoint } from './webhooks.remote';
 	import { browser, dev } from '$app/environment';
+	import WebhookEditModal from '$lib/WebhookEditModal.svelte';
+	import type { Endpoint, WebhookMessage } from '../lib/shared/types.js';
 
 	interface Props {
 		data: {
-			endpoints: Array<{
-				id: string;
-				url: string;
-				target: string;
-				method: string;
-				createdAt: string;
-			}>;
+			endpoints: Endpoint[];
 		};
 	}
 
@@ -29,6 +21,7 @@
 	let newTarget = $state('http://localhost:3000/api/webhook');
 	let newMethod = $state('POST');
 	let loading = $state(false);
+	let webhookEditModal: WebhookEditModal;
 
 	onMount(() => {
 		connectWebSocket();
@@ -65,15 +58,25 @@
 		navigator.clipboard.writeText(url);
 	}
 
-	async function handleReplay(message: (typeof $webhookMessages)[0]) {
+	async function handleReplay(message: WebhookMessage) {
 		const status = await forwardWebhook(message);
-		webhookMessages.update((messages) =>
-			messages.map((m) => (m === message ? { ...m, status } : m))
-		);
+		webhookMessages.state.unshift({
+			...message,
+			status,
+			timestamp: Date.now()
+		});
 	}
 
-	function handleClearMessages() {
-		webhookMessages.set([]);
+	function formatRelativeTime(timestamp: number): string {
+		const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
+		const now = Date.now();
+		const diffMs = timestamp - now;
+
+		const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+		const dayLabel = rtf.format(diffDays, 'day');
+		const time = new Date(timestamp).toLocaleTimeString();
+
+		return `${dayLabel} ${time}`;
 	}
 
 	function handleGenerateRandomWebhook() {
@@ -89,21 +92,22 @@
 			target: randomEndpoint.target,
 			headers: { 'content-type': 'application/json' },
 			body: JSON.stringify({ test: 'data' }),
-			status: randomStatus
+			status: randomStatus,
+			timestamp: Date.now()
 		};
 
-		webhookMessages.update((messages) => [randomMessage, ...messages]);
+		webhookMessages.state.unshift(randomMessage);
 	}
 
 	$effect(() => {
-		const messages = $webhookMessages;
-		if (messages.length > 0) {
-			const latest = messages[0];
+		if (webhookMessages.state.length > 0) {
+			const latest = webhookMessages.state[0];
 			if (latest.status === undefined) {
 				forwardWebhook(latest).then((status) => {
-					webhookMessages.update((messages) =>
-						messages.map((m) => (m === latest ? { ...m, status } : m))
-					);
+					const latestIndex = webhookMessages.state.findIndex((message) => message === latest);
+					if (latestIndex !== -1) {
+						webhookMessages.state[latestIndex] = { ...latest, status };
+					}
 				});
 			}
 		}
@@ -111,6 +115,15 @@
 </script>
 
 <Modals />
+<WebhookEditModal
+	bind:this={webhookEditModal}
+	onwebhookUpdated={(updatedEndpoint) => {
+		const endpointIndex = endpoints.findIndex((endpoint) => endpoint.id === updatedEndpoint.id);
+		if (endpointIndex !== -1) {
+			endpoints[endpointIndex] = updatedEndpoint;
+		}
+	}}
+/>
 <main>
 	<div>
 		<h1>Webhook Relay</h1>
@@ -135,6 +148,9 @@
 					<button class="btn-secondary" onclick={() => copyWebhookUrl(endpoint.url)}
 						>Copy URL</button
 					>
+					<button class="btn-secondary" onclick={() => webhookEditModal.openModal(endpoint)}
+						>Edit</button
+					>
 					<button class="btn-secondary" onclick={() => handleDeleteEndpoint(endpoint.id)}
 						>Delete</button
 					>
@@ -145,7 +161,7 @@
 
 	<section class="messages">
 		<div class="messages-header">
-			<h2>Recent Webhooks ({$webhookMessages.length})</h2>
+			<h2>Recent Webhooks ({webhookMessages.state.length})</h2>
 			<div class="button-group">
 				{#if dev}
 					<button class="btn-secondary" onclick={handleGenerateRandomWebhook}>
@@ -154,8 +170,8 @@
 				{/if}
 				<button
 					class="btn-secondary"
-					onclick={handleClearMessages}
-					disabled={$webhookMessages.length === 0}
+					onclick={() => webhookMessages.clear()}
+					disabled={webhookMessages.state.length === 0}
 				>
 					Clear
 				</button>
@@ -168,14 +184,26 @@
 				: 'this domain'} (CORS).
 		</p>
 		<ul>
-			{#each $webhookMessages as message (message)}
+			{#each webhookMessages.state as message (message)}
 				<li>
 					<span class="method">{message.method}</span>
 					<code class="shortid">{message.endpointId}</code>
 					<span class="target">→ {message.target}</span>
 					{#if message.status !== undefined}
-						<span class="status" class:error={message.status === null || message.status >= 400}>
-							{message.status !== null ? message.status : 'Failed'}
+						<span
+							class="status"
+							class:error={message.status !== null && message.status >= 400}
+							class:exception={message.status === null}
+						>
+							{message.status !== null ? message.status : 'err'}
+						</span>
+					{/if}
+					{#if message.headers['content-type']}
+						<span class="content-type">[{message.headers['content-type']}]</span>
+					{/if}
+					{#if message.timestamp}
+						<span class="timestamp">
+							{formatRelativeTime(message.timestamp)}
 						</span>
 					{/if}
 					<button class="btn-secondary replay-btn" onclick={() => handleReplay(message)}>
@@ -233,6 +261,7 @@
 		flex-direction: row;
 		column-gap: 1rem;
 		align-items: center;
+		font-family: monospace;
 
 		& button:first-of-type {
 			margin-left: auto;
@@ -241,10 +270,47 @@
 		& .method {
 			font-weight: bold;
 			color: var(--turqoise);
+			width: 4.5ch;
 		}
 
 		& .target {
 			color: var(--blue);
+			width: 40ch;
+			white-space: nowrap;
+			overflow-x: hidden;
+			text-overflow: ellipsis;
+		}
+
+		& .timestamp {
+			width: 28ch;
+		}
+
+		& .status {
+			padding: 0.25rem 0.5rem;
+			font-weight: bold;
+			background: var(--green);
+			color: white;
+			font-size: 0.9rem;
+		}
+
+		& .status.exception {
+			background: var(--turqoise);
+		}
+
+		& .status.error {
+			background: var(--orange);
+		}
+
+		& .content-type {
+			width: 22ch;
+		}
+
+		& .timestamp {
+			width: 28ch;
+		}
+
+		& .replay-btn {
+			margin-left: auto;
 		}
 	}
 
@@ -272,21 +338,5 @@
 	.devtools-hint {
 		font-size: 0.9rem;
 		margin-bottom: 1rem;
-	}
-
-	.replay-btn {
-		margin-left: auto;
-	}
-
-	.status {
-		padding: 0.25rem 0.5rem;
-		font-weight: bold;
-		background: var(--green);
-		color: white;
-		font-size: 0.9rem;
-	}
-
-	.status.error {
-		background: var(--orange);
 	}
 </style>

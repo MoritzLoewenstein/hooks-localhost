@@ -81,7 +81,8 @@ main {
 }
 
 button,
-a.btn {
+a.btn,
+p.btn {
 	font-family: 'Courier New', Courier, monospace;
 	font-weight: 700;
 	color: var(--offwhite);
@@ -91,6 +92,7 @@ a.btn {
 	padding: 0.5rem 1rem;
 	cursor: pointer;
 	transition: var(--color-transition);
+	margin: 0;
 }
 
 button.btn-secondary,

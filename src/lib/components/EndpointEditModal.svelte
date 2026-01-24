@@ -1,12 +1,11 @@
 <script lang="ts">
-	import { view, VIEW } from './client/view.svelte.js';
-	import CloseIcon from './icons/CloseIcon.svelte';
-	import MethodDropdown from './components/MethodDropdown.svelte';
-	import { updateEndpoint } from '../routes/webhooks.remote.js';
-	import type { Endpoint } from './shared/types.js';
+	import { view, VIEW } from '../client/view.svelte.js';
+	import CloseIcon from '../icons/CloseIcon.svelte';
+	import { updateEndpoint } from '../../routes/webhooks.remote.js';
+	import type { Endpoint } from '../shared/types.js';
 
-	let { onwebhookUpdated = () => {} } = $props<{
-		onwebhookUpdated?: (endpoint: Endpoint) => void;
+	let { onendpointUpdated = () => {} } = $props<{
+		onendpointUpdated?: (endpoint: Endpoint) => void;
 	}>();
 
 	let dialog: HTMLDialogElement;
@@ -14,6 +13,7 @@
 	let editTarget = $state('');
 	let editMethod = $state('');
 	let currentEndpoint = $state<Endpoint | null>(null);
+	const methods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
 
 	$effect(() => {
 		if (view.value === VIEW.EDIT_WEBHOOK) {
@@ -46,7 +46,7 @@
 				target: editTarget,
 				method: editMethod
 			});
-			onwebhookUpdated(updated);
+			onendpointUpdated(updated);
 			closeModal();
 		} catch (error) {
 			console.error('Failed to update endpoint:', error);
@@ -71,10 +71,20 @@
 					placeholder="http://localhost:3000/api/webhook"
 				/>
 			</label>
-			<label>
-				http method
-				<MethodDropdown bind:value={editMethod} onchange={(val) => (editMethod = val)} />
-			</label>
+			<div class="method-label">
+				<p>http method</p>
+				<div class="method-buttons">
+					{#each methods as method (method)}
+						{#if method !== editMethod}
+							<button type="button" class="btn-secondary" onclick={() => (editMethod = method)}>
+								{method}
+							</button>
+						{:else}
+							<p class="btn">{editMethod}</p>
+						{/if}
+					{/each}
+				</div>
+			</div>
 			<div class="modal-buttons">
 				<button onclick={handleSave} disabled={loading}>Save</button>
 				<button class="btn-secondary" onclick={closeModal}>Cancel</button>
@@ -105,6 +115,24 @@
 	label {
 		display: flex;
 		flex-direction: column;
+		font-size: 14px;
+	}
+
+	.method-label {
+		display: flex;
+		flex-direction: column;
+		font-size: 14px;
+	}
+
+	.method-buttons {
+		display: flex;
+		justify-content: space-between;
+		gap: 0.5rem;
+	}
+
+	.method-buttons p.btn,
+	button {
+		box-sizing: border-box;
 		font-size: 14px;
 	}
 </style>

@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { HTTP_METHODS } from '../constants';
+
 	interface Props {
 		value: string;
 		onchange: (value: string) => void;
@@ -6,7 +8,6 @@
 
 	let { value = $bindable(), onchange }: Props = $props();
 
-	const methods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
 	let isOpen = $state(false);
 
 	function toggleDropdown() {
@@ -37,7 +38,7 @@
 
 	{#if isOpen}
 		<ul class="dropdown-menu">
-			{#each methods as method (method)}
+			{#each HTTP_METHODS as method (method)}
 				<li>
 					<button
 						type="button"

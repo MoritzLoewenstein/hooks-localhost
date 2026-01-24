@@ -3,6 +3,7 @@
 	import CloseIcon from '../icons/CloseIcon.svelte';
 	import { updateEndpoint } from '../../routes/webhooks.remote.js';
 	import type { Endpoint } from '../shared/types.js';
+	import { HTTP_METHODS } from '../constants';
 
 	let { onendpointUpdated = () => {} } = $props<{
 		onendpointUpdated?: (endpoint: Endpoint) => void;
@@ -13,7 +14,6 @@
 	let editTarget = $state('');
 	let editMethod = $state('');
 	let currentEndpoint = $state<Endpoint | null>(null);
-	const methods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
 
 	$effect(() => {
 		if (view.value === VIEW.EDIT_WEBHOOK) {
@@ -74,7 +74,7 @@
 			<div class="method-label">
 				<p>http method</p>
 				<div class="method-buttons">
-					{#each methods as method (method)}
+					{#each HTTP_METHODS as method (method)}
 						{#if method !== editMethod}
 							<button type="button" class="btn-secondary" onclick={() => (editMethod = method)}>
 								{method}

@@ -8,6 +8,16 @@
 	}
 
 	let { message, onReplay }: Props = $props();
+
+	let formattedRelativeTime = $derived(
+		message.timestamp ? formatRelativeTime(message.timestamp) : null
+	);
+
+	export function dayChanged() {
+		if (message.timestamp) {
+			formattedRelativeTime = formatRelativeTime(message.timestamp);
+		}
+	}
 </script>
 
 <li>
@@ -26,10 +36,8 @@
 	{#if message.headers['content-type']}
 		<span class="content-type">[{message.headers['content-type']}]</span>
 	{/if}
-	{#if message.timestamp}
-		<span class="timestamp">
-			{formatRelativeTime(message.timestamp)}
-		</span>
+	{#if formattedRelativeTime}
+		<span class="timestamp">{formattedRelativeTime} </span>
 	{/if}
 	<button class="btn-secondary replay-btn" onclick={() => onReplay(message)}> ↻ Replay </button>
 </li>

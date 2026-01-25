@@ -27,7 +27,7 @@ export default defineConfig({
 	test: {
 		include: ['tests/**/*.test.ts'],
 		browser: {
-			enabled: false,
+			enabled: true,
 			provider: playwright(),
 			// https://vitest.dev/guide/browser/playwright
 			instances: [{ browser: 'chromium' }]

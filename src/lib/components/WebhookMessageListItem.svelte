@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { WebhookMessage } from '../shared/types';
-	import { formatRelativeTime } from '$lib/shared/formatters';
+	import { formatRelativeDays, formatTime } from '$lib/shared/formatters';
 
 	interface Props {
 		message: WebhookMessage;
@@ -9,13 +9,13 @@
 
 	let { message, onReplay }: Props = $props();
 
-	let formattedRelativeTime = $derived(
-		message.timestamp ? formatRelativeTime(message.timestamp) : null
+	let formattedRelativeDays = $state(
+		message.timestamp ? formatRelativeDays(message.timestamp) : null
 	);
 
 	export function dayChanged() {
 		if (message.timestamp) {
-			formattedRelativeTime = formatRelativeTime(message.timestamp);
+			formattedRelativeDays = formatRelativeDays(message.timestamp);
 		}
 	}
 </script>
@@ -36,10 +36,10 @@
 	{#if message.headers['content-type']}
 		<span class="content-type">[{message.headers['content-type']}]</span>
 	{/if}
-	{#if formattedRelativeTime}
-		<span class="timestamp">{formattedRelativeTime} </span>
+	{#if message.timestamp}
+		<span class="timestamp">{formattedRelativeDays} {formatTime(message.timestamp)}</span>
 	{/if}
-	<button class="btn-secondary replay-btn" onclick={() => onReplay(message)}> ↻ Replay </button>
+	<button class="btn-secondary replay-btn" onclick={() => onReplay(message)}>↻ Replay</button>
 </li>
 
 <style>

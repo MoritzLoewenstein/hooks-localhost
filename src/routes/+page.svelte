@@ -11,6 +11,7 @@
 	import { browser, dev } from '$app/environment';
 	import EndpointEditModal from '$lib/components/EndpointEditModal.svelte';
 	import type { Endpoint, WebhookMessage } from '../lib/shared/types.js';
+	import { ulid } from 'ulid';
 
 	interface Props {
 		data: {
@@ -60,6 +61,7 @@
 		const status = await forwardWebhook(message);
 		webhookMessages.state.unshift({
 			...message,
+			id: ulid(),
 			status,
 			timestamp: Date.now()
 		});
@@ -72,7 +74,8 @@
 		const randomEndpoint = endpoints[Math.floor(Math.random() * endpoints.length)];
 		const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
 
-		const randomMessage = {
+		webhookMessages.state.unshift({
+			id: ulid(),
 			method: randomEndpoint.method,
 			endpointId: randomEndpoint.id,
 			target: randomEndpoint.target,
@@ -80,9 +83,7 @@
 			body: JSON.stringify({ test: 'data' }),
 			status: randomStatus,
 			timestamp: Date.now()
-		};
-
-		webhookMessages.state.unshift(randomMessage);
+		});
 	}
 
 	$effect(() => {
@@ -92,7 +93,7 @@
 				forwardWebhook(latest).then((status) => {
 					const latestIndex = webhookMessages.state.findIndex((message) => message === latest);
 					if (latestIndex !== -1) {
-						webhookMessages.state[latestIndex] = { ...latest, status };
+						webhookMessages.state[latestIndex].status = status;
 					}
 				});
 			}

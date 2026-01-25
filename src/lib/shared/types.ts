@@ -6,7 +6,13 @@ export interface Endpoint {
 	createdAt: string;
 }
 
+export interface WebSocketMessage {
+	type: 'webhook';
+	data: WebhookMessage;
+}
+
 export interface WebhookMessage {
+	id: string;
 	endpointId: string;
 	target: string;
 	method: string;

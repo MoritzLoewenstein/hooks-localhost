@@ -1,12 +1,7 @@
 import { writable } from 'svelte/store';
 import { io, type Socket } from 'socket.io-client';
-import type { WebhookMessage } from '$lib/shared/types';
+import type { WebSocketMessage } from '$lib/shared/types';
 import { webhookMessages } from './webhookMessage.svelte';
-
-interface WebSocketMessage {
-	type: 'webhook';
-	data: WebhookMessage;
-}
 
 export const connected = writable(false);
 

@@ -3,26 +3,35 @@
 	import type { WebhookMessage } from '../shared/types';
 	import WebhookMessageListItem from './WebhookMessageListItem.svelte';
 
+	interface WebhookMessageWithRef extends WebhookMessage {
+		ref?: WebhookMessageListItem;
+	}
+
 	interface Props {
-		messages: WebhookMessage[];
+		messages: WebhookMessageWithRef[];
 		onReplay: (message: WebhookMessage) => void;
 	}
 
 	let { messages, onReplay }: Props = $props();
 
-	let itemRefs = $state<WebhookMessageListItem[]>([]);
 	let midnightTimeout: ReturnType<typeof setTimeout>;
 
-	function scheduleNextMidnightUpdate() {
+	function getMsUntilMidnight() {
 		const now = new Date();
 		// eslint-disable-next-line svelte/prefer-svelte-reactivity
 		const tomorrow = new Date(now);
 		tomorrow.setDate(tomorrow.getDate() + 1);
-		tomorrow.setHours(0, 0, 10, 0); // 00:00:10
+		tomorrow.setHours(0, 0, 1, 0); // 00:00:01
 		const msUntilMidnight = tomorrow.getTime() - now.getTime();
+		return msUntilMidnight;
+	}
 
+	function scheduleNextMidnightUpdate() {
+		const msUntilMidnight = getMsUntilMidnight();
 		midnightTimeout = setTimeout(() => {
-			itemRefs.forEach((item) => item?.dayChanged?.());
+			messages.forEach((msg) => {
+				msg.ref?.dayChanged?.();
+			});
 			scheduleNextMidnightUpdate();
 		}, msUntilMidnight);
 	}
@@ -38,8 +47,8 @@
 </script>
 
 <ul>
-	{#each messages as message, i (message)}
-		<WebhookMessageListItem bind:this={itemRefs[i]} {message} {onReplay} />
+	{#each messages as message (message.id)}
+		<WebhookMessageListItem bind:this={message.ref} {message} {onReplay} />
 	{/each}
 </ul>
 

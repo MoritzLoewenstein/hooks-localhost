@@ -1,5 +1,6 @@
 import type { Socket } from 'socket.io';
 import { getSessionUserInfo } from './session';
+import type { WebSocketMessage } from '$lib/shared/types';
 
 const connections = new Map<string, Socket>();
 
@@ -54,7 +55,7 @@ function removeConnection(userId: string) {
 	connections.delete(userId);
 }
 
-export function sendToUser(userId: string, data: unknown): boolean {
+export function sendToUser(userId: string, data: WebSocketMessage): boolean {
 	const socket = connections.get(userId);
 	if (!socket?.connected) {
 		return false;

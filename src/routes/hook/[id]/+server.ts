@@ -1,6 +1,7 @@
 import type { RequestHandler } from './$types';
 import { getWebhookEndpointById } from '$lib/server/webhook';
 import { sendToUser, isUserConnected } from '$lib/server/websocket';
+import { ulid } from 'ulid';
 
 export const GET: RequestHandler = async (event) => handleWebhook(event);
 export const POST: RequestHandler = async (event) => handleWebhook(event);
@@ -33,6 +34,7 @@ const handleWebhook: RequestHandler = async ({ params, request }) => {
 	sendToUser(endpoint.userId, {
 		type: 'webhook',
 		data: {
+			id: ulid(),
 			endpointId: endpoint.id,
 			target: endpoint.target,
 			method: request.method,

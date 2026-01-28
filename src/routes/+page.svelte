@@ -10,7 +10,7 @@
 	import { createEndpoint, removeEndpoint } from './webhooks.remote';
 	import { browser, dev } from '$app/environment';
 	import EndpointEditModal from '$lib/components/EndpointEditModal.svelte';
-	import type { Endpoint, WebhookMessage } from '../lib/shared/types.js';
+	import type { Endpoint } from '../lib/shared/types.js';
 	import { ulid } from 'ulid';
 
 	interface Props {
@@ -55,16 +55,6 @@
 		} catch (error) {
 			console.error('Failed to delete endpoint:', error);
 		}
-	}
-
-	async function handleReplay(message: WebhookMessage) {
-		const status = await forwardWebhook(message);
-		webhookMessages.state.unshift({
-			...message,
-			id: ulid(),
-			status,
-			timestamp: Date.now()
-		});
 	}
 
 	function handleGenerateRandomWebhook() {
@@ -157,7 +147,7 @@
 				? window.location.hostname
 				: 'this domain'} (CORS).
 		</p>
-		<WebhookMessageList messages={webhookMessages.state} onReplay={handleReplay} />
+		<WebhookMessageList />
 	</section>
 </main>
 

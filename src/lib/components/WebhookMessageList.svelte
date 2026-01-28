@@ -2,20 +2,39 @@
 	import { onMount } from 'svelte';
 	import type { WebhookMessage } from '../shared/types';
 	import WebhookMessageListItem from './WebhookMessageListItem.svelte';
+	import { webhookMessages } from '$lib/client/webhookMessage.svelte';
+	import { formatRelativeDays } from '$lib/shared/formatters';
+	import { forwardWebhook } from '$lib/client/webhook-forwarder';
+	import { ulid } from 'ulid';
 
-	interface WebhookMessageWithRef extends WebhookMessage {
-		ref?: WebhookMessageListItem;
+	let webhookMessagesWithDays = $derived(
+		webhookMessages.state.map((msg) => {
+			return {
+				...msg,
+				formattedRelativeDays: msg.timestamp ? formatRelativeDays(msg.timestamp) : undefined
+			};
+		})
+	);
+
+	onMount(() => {
+		scheduleNextMidnightUpdate();
+		return () => {
+			if (midnightTimeout) {
+				clearTimeout(midnightTimeout);
+			}
+		};
+	});
+
+	function updateRelativeDays() {
+		webhookMessagesWithDays = webhookMessages.state.map((msg) => {
+			return {
+				...msg,
+				formattedRelativeDays: msg.timestamp ? formatRelativeDays(msg.timestamp) : undefined
+			};
+		});
 	}
-
-	interface Props {
-		messages: WebhookMessageWithRef[];
-		onReplay: (message: WebhookMessage) => void;
-	}
-
-	let { messages, onReplay }: Props = $props();
 
 	let midnightTimeout: ReturnType<typeof setTimeout>;
-
 	function getMsUntilMidnight() {
 		const now = new Date();
 		// eslint-disable-next-line svelte/prefer-svelte-reactivity
@@ -29,26 +48,25 @@
 	function scheduleNextMidnightUpdate() {
 		const msUntilMidnight = getMsUntilMidnight();
 		midnightTimeout = setTimeout(() => {
-			messages.forEach((msg) => {
-				msg.ref?.dayChanged?.();
-			});
+			updateRelativeDays();
 			scheduleNextMidnightUpdate();
 		}, msUntilMidnight);
 	}
 
-	onMount(() => {
-		scheduleNextMidnightUpdate();
-		return () => {
-			if (midnightTimeout) {
-				clearTimeout(midnightTimeout);
-			}
-		};
-	});
+	async function handleReplay(message: WebhookMessage) {
+		const status = await forwardWebhook(message);
+		webhookMessages.state.unshift({
+			...message,
+			id: ulid(),
+			status,
+			timestamp: Date.now()
+		});
+	}
 </script>
 
 <ul>
-	{#each messages as message (message.id)}
-		<WebhookMessageListItem bind:this={message.ref} {message} {onReplay} />
+	{#each webhookMessagesWithDays as message (message)}
+		<WebhookMessageListItem {message} onReplay={handleReplay} />
 	{/each}
 </ul>
 

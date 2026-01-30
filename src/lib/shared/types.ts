@@ -20,7 +20,6 @@ export interface WebhookMessage {
 	body: string | null;
 	status?: number | null;
 	timestamp?: number;
-	formattedRelativeDays?:string;
 }
 
 export type ArrayElement<ArrayType extends readonly unknown[]> =

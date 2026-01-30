@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { WebhookMessage } from '../shared/types';
 	import { formatTime } from '$lib/shared/formatters';
+	import RelativeDays from './RelativeDays.svelte';
 
 	interface Props {
 		message: WebhookMessage;
@@ -26,8 +27,10 @@
 	{#if message.headers['content-type']}
 		<span class="content-type">[{message.headers['content-type']}]</span>
 	{/if}
-	{#if message.formattedRelativeDays && message.timestamp}
-		<span class="timestamp">{message.formattedRelativeDays} {formatTime(message.timestamp)}</span>
+	{#if message.timestamp}
+		<span class="timestamp"
+			><RelativeDays timestamp={message.timestamp} /> {formatTime(message.timestamp)}</span
+		>
 	{/if}
 	<button class="btn-secondary replay-btn" onclick={() => onReplay(message)}>↻ Replay</button>
 </li>

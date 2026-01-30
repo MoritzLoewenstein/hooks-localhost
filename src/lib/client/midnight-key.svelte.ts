@@ -1,12 +1,10 @@
-type MidnightState = {
+let midnightState = $state<{
 	key: number;
-	midnightTimeoutId: ReturnType<typeof setTimeout> | null;
+	timeoutId: ReturnType<typeof setTimeout> | null;
 	subscribers: number;
-};
-
-let midnightState = $state<MidnightState>({
+}>({
 	key: 0,
-	midnightTimeoutId: null,
+	timeoutId: null,
 	subscribers: 0
 });
 
@@ -22,7 +20,7 @@ function getMsUntilMidnight() {
 
 function scheduleNextMidnightUpdate() {
 	const msUntilMidnight = getMsUntilMidnight();
-	midnightState.midnightTimeoutId = setTimeout(() => {
+	midnightState.timeoutId = setTimeout(() => {
 		midnightState.key++;
 		scheduleNextMidnightUpdate();
 	}, msUntilMidnight);
@@ -41,8 +39,8 @@ export const midnight = {
 	unsubscribe() {
 		midnightState.subscribers--;
 		if (midnightState.subscribers === 0) {
-			clearTimeout(midnightState.midnightTimeoutId!);
-			midnightState.midnightTimeoutId = null;
+			clearTimeout(midnightState.timeoutId!);
+			midnightState.timeoutId = null;
 		}
 	}
 };

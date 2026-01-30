@@ -11,7 +11,7 @@ describe('RelativeDays', () => {
 		// Reset midnight state
 		midnight.state.key = 0;
 		midnight.state.subscribers = 0;
-		midnight.state.midnightTimeoutId = null;
+		midnight.state.timeoutId = null;
 	});
 
 	afterEach(() => {
@@ -67,12 +67,12 @@ describe('RelativeDays', () => {
 		});
 
 		expect(midnight.state.subscribers).toBe(1);
-		expect(midnight.state.midnightTimeoutId).not.toBeNull();
+		expect(midnight.state.timeoutId).not.toBeNull();
 
 		unmount();
 
 		expect(midnight.state.subscribers).toBe(0);
-		expect(midnight.state.midnightTimeoutId).toBeNull();
+		expect(midnight.state.timeoutId).toBeNull();
 	});
 
 	it('should update display when midnight key changes', async () => {
@@ -150,16 +150,16 @@ describe('RelativeDays', () => {
 		});
 
 		expect(midnight.state.subscribers).toBe(2);
-		expect(midnight.state.midnightTimeoutId).not.toBeNull();
+		expect(midnight.state.timeoutId).not.toBeNull();
 
 		unmount1();
 
 		expect(midnight.state.subscribers).toBe(1);
-		expect(midnight.state.midnightTimeoutId).not.toBeNull();
+		expect(midnight.state.timeoutId).not.toBeNull();
 
 		unmount2();
 
 		expect(midnight.state.subscribers).toBe(0);
-		expect(midnight.state.midnightTimeoutId).toBeNull();
+		expect(midnight.state.timeoutId).toBeNull();
 	});
 });

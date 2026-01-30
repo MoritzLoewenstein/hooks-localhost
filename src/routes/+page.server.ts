@@ -21,7 +21,7 @@ import {
 	createRecoveryCodes
 } from '$lib/server/user_recovery';
 import { getUserInvites, createInvite, getInvite, verifyInvite } from '$lib/server/user_invite';
-import { getDbBackup } from '$lib/server/db';
+import { db } from '$lib/server/db';
 import type { Actions } from './$types';
 import HttpStatusCode from '$lib/shared/HttpStatusCode';
 
@@ -317,7 +317,7 @@ export const actions: Actions = {
 			});
 		}
 
-		const backup = await getDbBackup();
+		const backup = await db.getBackup();
 		if (!backup) {
 			return fail(HttpStatusCode.INTERNAL_SERVER_ERROR, {
 				message: 'failed to create database backup',

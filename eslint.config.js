@@ -6,10 +6,11 @@ import globals from 'globals';
 import { fileURLToPath } from 'node:url';
 import ts from 'typescript-eslint';
 import svelteConfig from './svelte.config.js';
+import { defineConfig } from '@eslint/config-helpers';
 
 const gitignorePath = fileURLToPath(new URL('./.gitignore', import.meta.url));
 
-export default ts.config(
+export default defineConfig([
 	includeIgnoreFile(gitignorePath),
 	js.configs.recommended,
 	...ts.configs.recommended,
@@ -27,14 +28,38 @@ export default ts.config(
 		}
 	},
 	{
-		files: ['**/*.svelte', '**/*.svelte.ts', '**/*.svelte.js'],
+		files: ['**/*.svelte', '**/*.svelte.ts'],
 		languageOptions: {
 			parserOptions: {
-				projectService: true,
+				projectService: false,
 				extraFileExtensions: ['.svelte'],
 				parser: ts.parser,
 				svelteConfig
 			}
+		},
+		rules: {
+			'prefer-const': 'off',
+			'svelte/prefer-const': [
+				'error',
+				{
+					excludedRunes: ['$props', '$derived', '$state']
+				}
+			]
+		}
+	},
+	{
+		rules: {
+			'no-console': ['error', { allow: ['debug', 'info', 'warn', 'error', 'time', 'timeEnd'] }],
+			'@typescript-eslint/no-unused-vars': [
+				'error',
+				{
+					argsIgnorePattern: '^_',
+					caughtErrorsIgnorePattern: '^_',
+					destructuredArrayIgnorePattern: '^_',
+					varsIgnorePattern: '^_'
+				}
+			],
+			'svelte/no-navigation-without-resolve': 'off'
 		}
 	}
-);
+]);

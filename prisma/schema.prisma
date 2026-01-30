@@ -1,15 +1,10 @@
 generator client {
-  provider               = "prisma-client"
-  output                 = "../generated/prisma/"
-  moduleFormat           = "esm"
-  runtime                = "nodejs"
-  generatedFileExtension = "ts"
-  importFileExtension    = "ts"
+  provider = "prisma-client"
+  output   = "../generated/prisma/"
 }
 
 datasource db {
   provider = "sqlite"
-  url      = env("DATABASE_URL")
 }
 
 model User {

@@ -10,7 +10,7 @@
 		if (dbBackup) {
 			downloadB64(
 				'application/octet-stream',
-				`zentara_backup_${new Date().toISOString()}.db`,
+				`hooks_localhost_${new Date().toISOString()}.db`,
 				dbBackup
 			);
 		}

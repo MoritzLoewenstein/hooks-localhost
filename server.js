@@ -25,5 +25,5 @@ handler = svelteHandler;
 
 const port = process.env.PORT || 3000;
 httpServer.listen(port, () => {
-	console.log(`Server listening on port ${port}`);
+	console.info(`Server listening on port ${port}`);
 });

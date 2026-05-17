@@ -11,6 +11,7 @@
 	import { browser, dev } from '$app/environment';
 	import EndpointEditModal from '$lib/components/EndpointEditModal.svelte';
 	import type { Endpoint } from '../lib/shared/types.js';
+	import type { HttpMethod } from '$lib/constants';
 	import { ulid } from 'ulid';
 
 	interface Props {
@@ -22,7 +23,7 @@
 	let { data }: Props = $props();
 	let endpoints = $state(data.endpoints);
 	let newTarget = $state('http://localhost:3000/api/webhook');
-	let newMethod = $state('POST');
+	let newMethods = $state<HttpMethod[]>(['POST']);
 	let loading = $state(false);
 	let endpointEditModal: EndpointEditModal;
 
@@ -37,10 +38,10 @@
 	async function handleCreateEndpoint() {
 		loading = true;
 		try {
-			const newEndpoint = await createEndpoint({ target: newTarget, method: newMethod });
+			const newEndpoint = await createEndpoint({ target: newTarget, methods: newMethods });
 			endpoints = [newEndpoint, ...endpoints];
 			newTarget = 'http://localhost:3000/api/webhook';
-			newMethod = 'POST';
+			newMethods = ['POST'];
 		} catch (error) {
 			console.error('Failed to create endpoint:', error);
 		} finally {
@@ -63,10 +64,12 @@
 		const statuses = [200, 201, 204, 400, 404, 500];
 		const randomEndpoint = endpoints[Math.floor(Math.random() * endpoints.length)];
 		const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
+		const randomMethod =
+			randomEndpoint.methods[Math.floor(Math.random() * randomEndpoint.methods.length)] ?? 'POST';
 
 		webhookMessages.state.unshift({
 			id: ulid(),
-			method: randomEndpoint.method,
+			method: randomMethod,
 			endpointId: randomEndpoint.id,
 			target: randomEndpoint.target,
 			headers: { 'content-type': 'application/json' },
@@ -112,7 +115,7 @@
 
 		<div class="create-form">
 			<input type="text" bind:value={newTarget} placeholder="http://localhost:3000/api/webhook" />
-			<MethodDropdown bind:value={newMethod} onchange={(val) => (newMethod = val)} />
+			<MethodDropdown bind:value={newMethods} onchange={(val) => (newMethods = val)} />
 			<button onclick={handleCreateEndpoint} disabled={loading}>Create Endpoint</button>
 		</div>
 

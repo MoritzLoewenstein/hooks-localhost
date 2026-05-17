@@ -12,7 +12,7 @@
 
 <li>
 	<span>{endpoint.url}</span>
-	<span class="method">{endpoint.method}</span>
+	<span class="method">{endpoint.methods.join(', ')}</span>
 	<span class="target">→ {endpoint.target}</span>
 	<button class="btn-secondary" onclick={() => navigator.clipboard.writeText(endpoint.url)}
 		>Copy URL</button
@@ -38,7 +38,7 @@
 		& .method {
 			font-weight: bold;
 			color: var(--turqoise);
-			width: 4.5ch;
+			white-space: nowrap;
 		}
 
 		& .target {

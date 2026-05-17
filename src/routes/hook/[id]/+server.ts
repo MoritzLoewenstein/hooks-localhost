@@ -17,6 +17,11 @@ const handleWebhook: RequestHandler = async ({ params, request }) => {
 		return new Response(null, { status: 204 });
 	}
 
+	const methods: readonly string[] = endpoint.methods;
+	if (!methods.includes(request.method.toUpperCase())) {
+		return new Response(null, { status: 405 });
+	}
+
 	if (!isUserConnected(endpoint.userId)) {
 		return new Response(null, { status: 204 });
 	}

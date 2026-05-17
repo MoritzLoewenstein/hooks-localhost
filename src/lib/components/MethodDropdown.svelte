@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { HTTP_METHODS } from '../constants';
+	import { HTTP_METHODS, type HttpMethod } from '../constants';
 
 	interface Props {
-		value: string;
-		onchange: (value: string) => void;
+		value: HttpMethod[];
+		onchange: (value: HttpMethod[]) => void;
 	}
 
 	let { value = $bindable(), onchange }: Props = $props();
@@ -14,10 +14,13 @@
 		isOpen = !isOpen;
 	}
 
-	function selectMethod(method: string) {
-		value = method;
-		isOpen = false;
-		onchange(method);
+	function toggleMethod(method: HttpMethod) {
+		if (value.includes(method)) {
+			value = value.filter((m) => m !== method);
+		} else {
+			value = [...value, method];
+		}
+		onchange(value);
 	}
 
 	function handleClickOutside(event: MouseEvent) {
@@ -26,26 +29,39 @@
 			isOpen = false;
 		}
 	}
+
+	let triggerLabel = $derived.by(() => {
+		if (value.length === 0) return 'Select methods';
+		if (value.length === HTTP_METHODS.length) return 'All methods';
+		return value.join(', ');
+	});
 </script>
 
 <svelte:window onclick={handleClickOutside} />
 
 <div class="dropdown">
 	<button type="button" class="dropdown-trigger" onclick={toggleDropdown}>
-		{value}
+		<span class="label">{triggerLabel}</span>
 		<span class="arrow" class:open={isOpen}>▼</span>
 	</button>
 
 	{#if isOpen}
 		<ul class="dropdown-menu">
 			{#each HTTP_METHODS as method (method)}
+				{@const selected = value.includes(method)}
 				<li>
 					<button
 						type="button"
 						class="dropdown-item"
-						class:selected={method === value}
-						onclick={() => selectMethod(method)}
+						class:selected
+						onclick={() => toggleMethod(method)}
 					>
+						<input
+							type="checkbox"
+							checked={selected}
+							tabindex="-1"
+							onclick={(event) => event.preventDefault()}
+						/>
 						{method}
 					</button>
 				</li>
@@ -71,7 +87,7 @@
 		display: flex;
 		align-items: center;
 		gap: 0.5rem;
-		min-width: 120px;
+		min-width: 160px;
 		justify-content: space-between;
 		transition: var(--color-transition);
 	}
@@ -79,6 +95,12 @@
 	.dropdown-trigger:hover {
 		background-color: var(--blue);
 		color: var(--offwhite);
+	}
+
+	.label {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	.arrow {
@@ -114,6 +136,9 @@
 		width: 100%;
 		text-align: left;
 		cursor: pointer;
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
 		transition: var(--color-transition);
 	}
 
@@ -125,5 +150,10 @@
 	.dropdown-item.selected {
 		background-color: var(--blue);
 		color: var(--offwhite);
+	}
+
+	.dropdown-item input[type='checkbox'] {
+		pointer-events: none;
+		accent-color: var(--blue);
 	}
 </style>

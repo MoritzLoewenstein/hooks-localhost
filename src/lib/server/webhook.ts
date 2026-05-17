@@ -3,6 +3,9 @@ import { prisma as db } from './db';
 import { env } from '$env/dynamic/private';
 import { HTTP_METHODS } from '../constants';
 import type { ArrayElement } from '$lib/shared/types';
+import type { WebhookEndpointModel } from '../../../generated/prisma/models';
+
+type HttpMethod = ArrayElement<typeof HTTP_METHODS>;
 
 function validateLocalhostTarget(target: string): URL | null {
 	try {
@@ -17,34 +20,59 @@ function validateLocalhostTarget(target: string): URL | null {
 	}
 }
 
-function validateEndpoint(target: string, method: string): { target: string; method: string } {
+function validateEndpoint(
+	target: string,
+	methods: string[]
+): { target: string; methods: HttpMethod[] } {
 	const targetUrl = validateLocalhostTarget(target);
 	if (targetUrl === null) {
 		throw new Error('Target must be http://localhost URL');
 	}
 
-	const METHOD = method.toUpperCase();
-	if (!HTTP_METHODS.includes(METHOD as ArrayElement<typeof HTTP_METHODS>)) {
-		throw new Error('Invalid HTTP method');
+	if (!Array.isArray(methods) || methods.length === 0) {
+		throw new Error('At least one HTTP method must be selected');
+	}
+
+	const normalized: HttpMethod[] = [];
+	for (const method of methods) {
+		const METHOD = method.toUpperCase() as HttpMethod;
+		if (!HTTP_METHODS.includes(METHOD)) {
+			throw new Error('Invalid HTTP method');
+		}
+		if (!normalized.includes(METHOD)) {
+			normalized.push(METHOD);
+		}
 	}
 
 	return {
 		target: targetUrl.href,
-		method: METHOD
+		methods: normalized
 	};
 }
 
-export async function createWebhookEndpoint(userId: string, target: string, method: string) {
-	const { target: targetValid, method: methodValid } = validateEndpoint(target, method);
+function serializeEndpoint(endpoint: WebhookEndpointModel) {
+	return {
+		id: endpoint.id,
+		userId: endpoint.userId,
+		target: endpoint.target,
+		methods: endpoint.methods,
+		url: `${env.ORIGIN}/hook/${endpoint.id}`,
+		createdAt: endpoint.createdAt.toISOString()
+	};
+}
 
-	return await db.webhookEndpoint.create({
+export async function createWebhookEndpoint(userId: string, target: string, methods: string[]) {
+	const { target: targetValid, methods: methodsValid } = validateEndpoint(target, methods);
+
+	const created = await db.webhookEndpoint.create({
 		data: {
 			id: ulid(),
 			userId,
 			target: targetValid,
-			method: methodValid
+			methods: methodsValid
 		}
 	});
+	return serializeEndpoint(created);
 }
 
 export async function getWebhookEndpoints(userId: string) {
@@ -52,11 +80,7 @@ export async function getWebhookEndpoints(userId: string) {
 		where: { userId },
 		orderBy: { createdAt: 'desc' }
 	});
-	return endpoints.map((e) => ({
-		...e,
-		url: `${env.ORIGIN}/hook/${e.id}`,
-		createdAt: e.createdAt.toISOString()
-	}));
+	return endpoints.map(serializeEndpoint);
 }
 
 export async function getWebhookEndpointById(id: string) {
@@ -69,17 +93,18 @@ export async function updateWebhookEndpoint(
 	userId: string,
 	id: string,
 	target: string,
-	method: string
+	methods: string[]
 ) {
-	const { target: targetValid, method: methodValid } = validateEndpoint(target, method);
+	const { target: targetValid, methods: methodsValid } = validateEndpoint(target, methods);
 
-	return await db.webhookEndpoint.update({
+	const updated = await db.webhookEndpoint.update({
 		where: { id, userId },
 		data: {
 			target: targetValid,
-			method: methodValid
+			methods: methodsValid
 		}
 	});
+	return serializeEndpoint(updated);
 }
 
 export async function deleteWebhookEndpoint(userId: string, id: string) {

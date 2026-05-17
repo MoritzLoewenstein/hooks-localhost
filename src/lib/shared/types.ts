@@ -1,8 +1,10 @@
+import type { HTTP_METHODS, HttpMethod } from '$lib/constants';
+
 export interface Endpoint {
 	id: string;
 	url: string;
 	target: string;
-	method: string;
+	methods: HttpMethod[];
 	createdAt: string;
 }
 
@@ -24,3 +26,10 @@ export interface WebhookMessage {
 
 export type ArrayElement<ArrayType extends readonly unknown[]> =
 	ArrayType extends readonly (infer ElementType)[] ? ElementType : never;
+
+declare global {
+	// eslint-disable-next-line @typescript-eslint/no-namespace
+	namespace PrismaJson {
+		type WebhookEndpointMethods = (typeof HTTP_METHODS)[number][];
+	}
+}

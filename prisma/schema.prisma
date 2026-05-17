@@ -3,6 +3,10 @@ generator client {
   output   = "../generated/prisma/"
 }
 
+generator json {
+  provider = "prisma-json-types-generator"
+}
+
 datasource db {
   provider = "sqlite"
 }
@@ -59,7 +63,8 @@ model WebhookEndpoint {
   id        String   @id
   userId    String   @map("user_id")
   target    String
-  method    String
+  /// [WebhookEndpointMethods]
+  methods   Json     @default("[]")
   createdAt DateTime @default(now()) @map("created_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)

@@ -9,12 +9,17 @@ import {
 import HttpStatusCode from '$lib/shared/HttpStatusCode';
 import { error } from '@sveltejs/kit';
 import * as v from 'valibot';
-import { env } from '$env/dynamic/private';
+import { HTTP_METHODS } from '$lib/constants';
+
+const methodsSchema = v.pipe(
+	v.array(v.picklist(HTTP_METHODS)),
+	v.minLength(1, 'At least one HTTP method must be selected')
+);
 
 export const createEndpoint = command(
 	v.object({
 		target: v.string(),
-		method: v.string()
+		methods: methodsSchema
 	}),
 	async (data) => {
 		const { cookies } = getRequestEvent();
@@ -28,12 +33,7 @@ export const createEndpoint = command(
 			return error(HttpStatusCode.UNAUTHORIZED, { message: 'unauthorized' });
 		}
 
-		const endpoint = await createWebhookEndpoint(user.id, data.target, data.method);
-		return {
-			...endpoint,
-			url: `${env.ORIGIN}/hook/${endpoint.id}`,
-			createdAt: endpoint.createdAt.toISOString()
-		};
+		return await createWebhookEndpoint(user.id, data.target, data.methods);
 	}
 );
 
@@ -41,7 +41,7 @@ export const updateEndpoint = command(
 	v.object({
 		id: v.string(),
 		target: v.string(),
-		method: v.string()
+		methods: methodsSchema
 	}),
 	async (data) => {
 		const { cookies } = getRequestEvent();
@@ -55,12 +55,7 @@ export const updateEndpoint = command(
 			return error(HttpStatusCode.UNAUTHORIZED, { message: 'unauthorized' });
 		}
 
-		const endpoint = await updateWebhookEndpoint(user.id, data.id, data.target, data.method);
-		return {
-			...endpoint,
-			url: `${env.ORIGIN}/hook/${endpoint.id}`,
-			createdAt: endpoint.createdAt.toISOString()
-		};
+		return await updateWebhookEndpoint(user.id, data.id, data.target, data.methods);
 	}
 );
 
